@@ -1,0 +1,20 @@
+{
+  "name": "my-fwk",
+  "version": "1.0.0",
+  "main": "dist/my-fwk.js",
+  "files": [
+    "dist/my-fwk.js"
+  ],
+  "devDependencies": {
+    "eslint": "^9.28.0",
+    "rollup": "^4.41.1",
+    "rollup-plugin-cleanup": "^3.2.1",
+    "rollup-plugin-filesize": "^10.0.0"
+  },
+  "scripts": {
+    "prepack": "npm run build",
+    "build": "rollup -c",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  }
+}

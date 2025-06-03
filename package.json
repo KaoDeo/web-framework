@@ -1,0 +1,25 @@
+{
+  "name": "web-framework-project-unique",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve:examples": "npx http-server . -o ./examples/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KaoDeo/web-framework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KaoDeo/web-framework/issues"
+  },
+  "homepage": "https://github.com/KaoDeo/web-framework#readme",
+  "workspaces": [
+    "packages/runtime"
+  ]
+}
