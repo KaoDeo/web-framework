@@ -1,16 +1,14 @@
-import cleanup from 'rollup-plugin-cleanup'
-import filesize from 'rollup-plugin-filesize'
-
+import cleanup from 'rollup-plugin-cleanup';
+import filesize from 'rollup-plugin-filesize';
 
 export default {
-input: 'src/index.js',
-plugins: [cleanup()],
-output: [
-{
-
-file: 'dist/my-fwk.js',
-format: 'esm',
-plugins: [filesize()],
-},
-],
-}
+  input: 'src/index.js',
+  plugins: [cleanup()],
+  output: [
+    {
+      file: 'dist/my-fwk.js',
+      format: 'esm',
+      plugins: [filesize()],
+    },
+  ],
+};

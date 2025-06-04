@@ -1,14 +1,14 @@
 module.exports = {
-    env: {
+  env: {
     browser: true,
     es2021: true,
-    },
-    extends: 'eslint:recommended',
-    overrides: [],
+  },
+  extends: 'eslint:recommended',
+  overrides: [],
 
-    parserOptions: {
+  parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    },
-    rules: {},
-    }
+  },
+  rules: {},
+};
