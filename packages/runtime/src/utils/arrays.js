@@ -106,6 +106,7 @@ export function arraysDiffSequence(
   const array = new ArrayWithOriginalIndices(oldArray, equalsFn);
 
   for (let index = 0; index < newArray.length; index++) {
+    // is firts to avoid extra comparisons
     if (array.isRemoval(index, newArray)) {
       sequence.push(array.removeItem(index));
       // Removals shouldn't advance the index. Removing the item shifts the
