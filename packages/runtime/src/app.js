@@ -1,6 +1,7 @@
 import { destroyDOM } from './destroy-dom';
 import { Dispatcher } from './dispatcher';
 import { mountDOM } from './mount-dom';
+import { patchDOM } from './patch-dom';
 
 // creates application instance
 export function createApp({ state, view, reducers = {} }) {
@@ -8,15 +9,15 @@ export function createApp({ state, view, reducers = {} }) {
   let vdom = null;
 
   const dispatcher = new Dispatcher();
-  const subscriptions = [dispatcher.afterEveryCommand(renderApp)]; // --1--
+  const subscriptions = [dispatcher.afterEveryCommand(renderApp)];
 
   for (const actionName in reducers) {
     const reducer = reducers[actionName];
 
     const subs = dispatcher.subscribe(actionName, (payload) => {
-      state = reducer(state, payload); // --2--
+      state = reducer(state, payload);
     });
-    subscriptions.push(subs); // --3--
+    subscriptions.push(subs);
   }
 
   function emit(eventName, payload) {
@@ -24,18 +25,16 @@ export function createApp({ state, view, reducers = {} }) {
   }
 
   function renderApp() {
-    if (vdom) {
-      destroyDOM(vdom);
-    }
+    const newVdom = view(state, emit);
 
-    vdom = view(state, emit);
-    mountDOM(vdom, parentEl);
+    vdom = patchDOM(vdom, newVdom, parentEl);
   }
 
   return {
     mount(_parentEl) {
       parentEl = _parentEl;
-      renderApp();
+      vdom = view(state, emit);
+      mountDOM(vdom, parentEl);
     },
     unmount() {
       destroyDOM(vdom);

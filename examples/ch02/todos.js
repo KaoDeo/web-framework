@@ -94,7 +94,7 @@
 //   todosList.childNodes[index].remove();
 // }
 
-import { createApp, h, hFragment } from '../../packages/runtime/dist/my-fwk';
+import { createApp, h, hFragment } from '../../packages/runtime/src/index';
 
 const state = {
   currentTodo: '',
