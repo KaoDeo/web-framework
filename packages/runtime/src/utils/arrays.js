@@ -1,5 +1,9 @@
 import { makeCountMap, mapsDiff } from './maps';
 
+// The reconciliation algorithm compares two virtual DOM trees,
+// finds the sequence of operations that transforms one into the other, and
+// patches the real DOM by applying those operations to it.
+
 /**
  * If the given value is an array, it returns it. Otherwise, it returns an array
  * containing the given value.
