@@ -14,24 +14,6 @@ import { objectsDiff } from './utils/objects';
 import { extractPropsAndEvents } from './utils/props';
 import { isNotBlankOrEmptyString } from './utils/strings';
 
-/**
- * Patches the DOM by comparing the `oldVdom` and `newVdom` virtual nodes and
- * finding the changes that need to be applied to the DOM.
- *
- * This function requires the `oldVdom` tree to have an `el` property set in
- * all its nodes, that is, the `oldVdom` tree must have been mounted before.
- *
- * The function sets the `el` property in the `newVdom` tree to the same
- * elements as in the `oldVdom` tree, but with the changes applied. If a node
- * in the new tree is new, it'll be mounted and its `el` property set.
- *
- * @param {import('./h').VNode} oldVdom the old virtual dom
- * @param {import('./h').VNode} newVdom the new virtual dom
- * @param {Node} parentEl the parent element
- * @param {import('./component').Component} [hostComponent] The component that the listeners are added to
- *
- * @returns {Element} the patched element
- */
 export function patchDOM(oldVdom, newVdom, parentEl, hostComponent = null) {
   // when nodes change, destroy it and its subtree
   if (!areNodesEqual(oldVdom, newVdom)) {
@@ -66,14 +48,6 @@ export function patchDOM(oldVdom, newVdom, parentEl, hostComponent = null) {
   return newVdom;
 }
 
-/**
- * Returns the index of the `el` element in its parent's children.
- * If the element is not found, returns `null`.
- *
- * @param {Element} parentEl the parent element
- * @param {Element} el the element to find
- * @returns {number | null} index
- */
 function findIndexInParent(parentEl, el) {
   const index = Array.from(parentEl.childNodes).indexOf(el);
   if (index < 0) {
@@ -83,15 +57,6 @@ function findIndexInParent(parentEl, el) {
   return index;
 }
 
-/**
- * Patches a text virtual node.
- *
- * If the `newVdom.value` (its text content) is different from the `oldVdom.value`,
- * the `Text` node `nodeValue` property is updated with the new value.
- *
- * @param {import('./h').TextVNode} oldVdom The old virtual node
- * @param {import('./h').TextVNode} newVdom The new virtual node
- */
 function patchText(oldVdom, newVdom) {
   const el = oldVdom.el;
   const { value: oldText } = oldVdom;
@@ -102,16 +67,6 @@ function patchText(oldVdom, newVdom) {
   }
 }
 
-/**
- * Patches an element virtual node.
- *
- * Patching an element requires to patch its attributes, class, style and events.
- * (The element's children are patched separately.)
- *
- * @param {import('./h').ElementVNode} oldVdom the old virtual node
- * @param {import('./h').ElementVNode} newVdom the new virtual node
- * @param {import('./component').Component} [hostComponent] The component that the listeners are added to
- */
 function patchElement(oldVdom, newVdom, hostComponent) {
   const el = oldVdom.el;
   const {
@@ -140,16 +95,6 @@ function patchElement(oldVdom, newVdom, hostComponent) {
   );
 }
 
-/**
- * Patches the attributes of an element virtual node.
- *
- * The attributes are patched by removing the old attributes and setting the value
- * of the new and modified attributes.
- *
- * @param {Element} el the element to patch
- * @param {Object.<string, string>} oldAttrs the attributes of the old virtual node
- * @param {Object.<string, string>} newAttrs the attributes of the new virtual node
- */
 function patchAttrs(el, oldAttrs, newAttrs) {
   const { added, removed, updated } = objectsDiff(oldAttrs, newAttrs);
 
@@ -162,16 +107,6 @@ function patchAttrs(el, oldAttrs, newAttrs) {
   }
 }
 
-/**
- * Patches the class(es) of an element.
- *
- * The class(es) are patched by removing the old class(es) and adding the new
- * and modified class(es).
- *
- * @param {Node} el The element to patch
- * @param {string[]|string} [oldClass] the class(es) of the old virtual node
- * @param {string[]|string} [newClass] the class(es) of the new virtual node
- */
 function patchClasses(el, oldClass, newClass) {
   const oldClasses = toClassList(oldClass);
   const newClasses = toClassList(newClass);
@@ -186,30 +121,12 @@ function patchClasses(el, oldClass, newClass) {
   }
 }
 
-/**
- * Extracts a list of classes from the given class string or array.
- * If the given class is undefined, an empty array is returned.
- *
- * @param {(string[]|string} [classes] the class string or array
- * @returns {string[]} the class list
- */
 function toClassList(classes = '') {
   return Array.isArray(classes)
     ? classes.filter(isNotBlankOrEmptyString)
     : classes.split(/(\s+)/).filter(isNotBlankOrEmptyString);
 }
 
-/**
- * Patches the style of an element.
- *
- * The style is patched by removing the styles that were in the old virtual node
- * but not in the new virtual node, and by setting the value of the new and
- * modified styles.
- *
- * @param {Node} el the element to patch
- * @param {Object.<string, string>} [oldStyle] the style object of the old virtual node
- * @param {Object.<string, string>} [newStyle] the style object of the new virtual node
- */
 function patchStyles(el, oldStyle = {}, newStyle = {}) {
   const { added, removed, updated } = objectsDiff(oldStyle, newStyle);
 
@@ -222,21 +139,6 @@ function patchStyles(el, oldStyle = {}, newStyle = {}) {
   }
 }
 
-/**
- * Patches the event listeners of an element.
- *
- * The events are patched by removing the event listeners that were removed or
- * modified in the new virtual node, and by adding the added and modified event
- * listeners.
- *
- * @param {Element} el the element to patch
- * @param {Object.<string, Function>} oldListeners the listeners added to the DOM
- * @param {Object.<string, Function>} oldEvents the events of the old virtual node
- * @param {Object.<string, Function>} newEvents the events of the new virtual node
- * @param {import('./component').Component} [hostComponent] The component that the listeners are added to
- *
- * @returns {Object.<string, Function>} the listeners that were added
- */
 function patchEvents(
   el,
   oldListeners = {},
@@ -265,17 +167,6 @@ function patchEvents(
   return addedListeners;
 }
 
-/**
- * Patches a component virtual node.
- *
- * To patch a component, the new props are passed to the component's `updateProps()`.
- * This method is responsible for updating the component's state and re-rendering
- * the component. Calling `updateProps()` will cause call the component's `#patch()`
- * method, which will in turn use the `patchDOM()` function to patch the DOM.
- *
- * @param {import('./h').ElementVNode} oldVdom the old virtual node
- * @param {import('./h').ElementVNode} newVdom the new virtual node
- */
 function patchComponent(oldVdom, newVdom) {
   const { component } = oldVdom;
   const { children } = newVdom;
@@ -288,31 +179,6 @@ function patchComponent(oldVdom, newVdom) {
   newVdom.el = component.firstElement;
 }
 
-/**
- * Patches the children of a virtual node.
- *
- * To patch two virtual nodes' children, the `arraysDiffSequence` function
- * is used to compute a sequence of operations that transform the old
- * children array into the new children array. For each operation, the
- * corresponding DOM modification is performed:
- *
- * - `ARRAY_DIFF_OP.ADD`: the new child is mounted in the DOM at the given index
- * - `ARRAY_DIFF_OP.REMOVE`: the old child is removed from the DOM
- * - `ARRAY_DIFF_OP.MOVE`: the old child's element is moved to its new index and the nodes are passed to the `patchDOM` function
- * - `ARRAY_DIFF_OP.NOOP`: both virtual nodes are passed to the `patchDOM` function
- *
- * When the vdom is the view from a component (that is, when `hostComponent != null`), the operation indices
- * are relative to the component's view. In these cases, the offset of the component's first child in the
- * parent element is used to correct the indices. These only affects the operations where the indices
- * refer to the actual DOM:
- *
- * - `ADD`: the index where the new child is mounted in the DOM needs to be corrected
- * - `MOVE`: the index of the item used as reference in the DOM for the move needs to be corrected
- *
- * @param {import('./h').VNode} oldVdom The old virtual node
- * @param {import('./h').VNode} newVdom the new virtual node
- * @param {import('./component').Component} [hostComponent] The component that the listeners are added to
- */
 function patchChildren(oldVdom, newVdom, hostComponent) {
   const oldChildren = extractChildren(oldVdom);
   const newChildren = extractChildren(newVdom);
@@ -339,13 +205,6 @@ function patchChildren(oldVdom, newVdom, hostComponent) {
         const oldChild = oldChildren[originalIndex];
         const newChild = newChildren[index];
         const elAtTargetIndex = parentEl.childNodes[index + offset];
-
-        // Note to readers:
-        //
-        // If you are following along with the code in the book, you will notice that the `elementsToMove` variable
-        // isn't defined in the book. The original code had a bug that caused only the first element of a component
-        // using a top-level fragment to be moved. This bug was fixed by adding the `elementsToMove` variable and
-        // using it to move all the elements of a component when the component is a top-level fragment.
 
         const elementsToMove = isComponent(oldChild)
           ? oldChild.component.elements
