@@ -1,5 +1,11 @@
 // const todos = ['Walk the dog', 'Water the plants', 'Sand the chairs'];
 
+import {
+  defineComponent,
+  hFragment,
+  h,
+} from '../../packages/runtime/src/index.js';
+
 // const addTodoInput = document.getElementById('todo-input');
 // const addTodoButton = document.getElementById('add-todo-btn');
 // const todosList = document.getElementById('todos-list');
@@ -108,7 +114,7 @@
 
 // const reducers = {
 //   'update-current-todo': (state, currentTodo) => ({
-//     // --1--
+//
 //     ...state,
 //     currentTodo, // --2--
 //   }),
@@ -158,20 +164,19 @@
 //   }),
 // };
 
+//? global vdom
 // function CreateTodo({ currentTodo }, emit) {
-//   // --1--
 //   return h('div', {}, [
-//     h('label', { for: 'todo-input' }, ['New TODO']), // --2--
+//     h('label', { for: 'todo-input' }, ['New TODO']),
 //     h('input', {
 //       type: 'text',
 //       id: 'todo-input',
-//       value: currentTodo, // --3--
+//       value: currentTodo,
 //       on: {
-//         input: ({ target }) => emit('update-current-todo', target.value), // --4--
+//         input: ({ target }) => emit('update-current-todo', target.value),
 //         keydown: ({ key }) => {
 //           if (key === 'Enter' && currentTodo.length >= 3) {
-//             // --5--
-//             emit('add-todo'); // --6--
+//             emit('add-todo');
 //           }
 //         },
 //       },
@@ -179,8 +184,8 @@
 //     h(
 //       'button',
 //       {
-//         disabled: currentTodo.length < 3, // --7--
-//         on: { click: () => emit('add-todo') }, // --8--
+//         disabled: currentTodo.length < 3,
+//         on: { click: () => emit('add-todo') },
 //       },
 //       ['Add']
 //     ),
@@ -199,18 +204,17 @@
 
 //   return isEditing
 //     ? h('li', {}, [
-//         // --1--
 //         h('input', {
-//           value: edit.edited, // --2--
+//           value: edit.edited,
 //           on: {
-//             input: ({ target }) => emit('edit-todo', target.value), // --3--
+//             input: ({ target }) => emit('edit-todo', target.value),
 //           },
 //         }),
 //         h(
 //           'button',
 //           {
 //             on: {
-//               click: () => emit('save-edited-todo'), // --4--
+//               click: () => emit('save-edited-todo'),
 //             },
 //           },
 //           ['Save']
@@ -219,28 +223,27 @@
 //           'button',
 //           {
 //             on: {
-//               click: () => emit('cancel-editing-todo'), // --5--
+//               click: () => emit('cancel-editing-todo'),
 //             },
 //           },
 //           ['Cancel']
 //         ),
 //       ])
 //     : h('li', {}, [
-//         // --6--
 //         h(
 //           'span',
 //           {
 //             on: {
-//               dblclick: () => emit('start-editing-todo', i), // --7--
+//               dblclick: () => emit('start-editing-todo', i),
 //             },
 //           },
-//           [todo] // --8--
+//           [todo]
 //         ),
 //         h(
 //           'button',
 //           {
 //             on: {
-//               click: () => emit('remove-todo', i), // --9--
+//               click: () => emit('remove-todo', i),
 //             },
 //           },
 //           ['Done']
@@ -258,35 +261,33 @@
 
 // createApp({ state, reducers, view: App }).mount(document.body);
 
-import { h, defineComponent } from '../../packages/runtime/src/index';
+//? stateful components
 
-const Counter = defineComponent({
-  state: () => ({ count: 0 }),
-
-  increment() {
-    this.updateState({ count: this.state.count + 1 });
+const component = defineComponent({
+  state() {
+    return { count: 0 };
   },
 
   render() {
-    return h('div', {}, [
+    return hFragment([
+      h('h1', {}, ['Important news!']),
+      h('p', {}, ['I made myself coffee.']),
       h('p', {}, [`Count: ${this.state.count}`]),
+
       h(
         'button',
         {
           on: {
-            /**
-             * 
-            This is an arrow function, and arrow functions:
-	•	Do not have their own this
-	•	They inherit this from the surrounding context — in this case, the component instance
-             */
-            click: () => this.increment(),
+            click: () => {
+              this.updateState({ count: this.state.count + 1 });
+            },
           },
         },
-        ['Increment']
+        ['Say congrats']
       ),
     ]);
   },
 });
 
-export default Counter;
+const coffee = new component();
+coffee.mount(document.body);

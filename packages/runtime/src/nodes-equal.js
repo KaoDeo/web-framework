@@ -1,4 +1,4 @@
-import { DOM_TYPES } from './h';
+import { DOM_TYPES } from './h.js';
 
 /**
  * Checks whether two virtual nodes are equal, following a specific logic:

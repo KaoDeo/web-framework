@@ -1,5 +1,6 @@
-import { DOM_TYPES } from './h';
-import { addEventListeners } from './events';
+import { DOM_TYPES } from './h.js';
+import { addEventListeners } from './events.js';
+import { setAttributes } from './attributes.js';
 
 export function mountDOM(vdom, parentEl, index, hostComponent = null) {
   switch (vdom.type) {
@@ -57,6 +58,8 @@ function createFragmentNodes(vdom, parentEl, index, hostComponent) {
 function insert(el, parentEl, index) {
   // If index is null or undefined, simply append.
   // Note the usage of == instead of ===.
+
+  console.log(parentEl);
   if (index == null) {
     parentEl.append(el);
     return;
