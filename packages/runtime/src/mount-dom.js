@@ -1,6 +1,7 @@
 import { DOM_TYPES } from './h.js';
 import { addEventListeners } from './events.js';
 import { setAttributes } from './attributes.js';
+import { extractPropsAndEvents } from './utils/props.js';
 
 export function mountDOM(vdom, parentEl, index, hostComponent = null) {
   switch (vdom.type) {
@@ -19,10 +20,24 @@ export function mountDOM(vdom, parentEl, index, hostComponent = null) {
       break;
     }
 
+    case DOM_TYPES.COMPONENT: {
+      createComponentNode(vdom, parentEl, index, hostComponent);
+      break;
+    }
+
     default: {
       throw new Error(`Can't mount DOM of type: ${vdom.type}`);
     }
   }
+}
+
+function createComponentNode(vdom, parentEl, index, hostComponent) {
+  const { props, events } = extractPropsAndEvents(vdom);
+
+  const component = new Component(props, events, hostComponent);
+  component.mount(parentEl, index);
+  vdom.component = component;
+  vdom.el = component.firstElement;
 }
 
 function createTextNode(vdom, parentEl, index) {

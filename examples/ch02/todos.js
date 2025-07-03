@@ -289,5 +289,17 @@ const component = defineComponent({
   },
 });
 
+const MyFancyButton = defineComponent({
+  render() {
+    return h(
+      'button',
+      {
+        on: { click: () => this.emit('click') },
+      },
+      ['Click me!']
+    );
+  },
+});
+
 const coffee = new component();
 coffee.mount(document.body);

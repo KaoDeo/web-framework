@@ -16,6 +16,7 @@ import {
   arraysDiff,
 } from './utils/arrays.js';
 import { isNotBlankOrEmptyString } from './utils/strings.js';
+import { extractPropsAndEvents } from './utils/props.js';
 
 export function patchDOM(oldVdom, newVdom, parentEl, hostComponent = null) {
   // when nodes change, destroy it and its subtree
@@ -124,6 +125,14 @@ function patchClasses(el, oldClass, newClass) {
   }
 }
 
+function patchComponent(oldVdom, newVdom) {
+  const { component } = oldVdom;
+  const { props } = extractPropsAndEvents(newVdom);
+  component.updateProps(props);
+  newVdom.component = component;
+  newVdom.el = component.firstElement;
+}
+
 function toClassList(classes = '') {
   return Array.isArray(classes)
     ? classes.filter(isNotBlankOrEmptyString)
@@ -170,7 +179,7 @@ function patchEvents(
   return addedListeners;
 }
 
-function patchChildren(oldVdom, newVdom) {
+function patchChildren(oldVdom, newVdom, hostComponent) {
   const oldChildren = extractChildren(oldVdom);
   const newChildren = extractChildren(newVdom);
   const parentEl = oldVdom.el;

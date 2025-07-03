@@ -15,16 +15,24 @@ import { destroyDOM } from './destroy-dom.js';
 import { mountDOM } from './mount-dom.js';
 import { patchDOM } from './patch-dom.js';
 import { DOM_TYPES, extractChildren } from './h.js';
+import { hasOwnProperty } from './utils/objects.js';
+import { Dispatcher } from './dispatcher.js';
 
-export function defineComponent({ render, state }) {
+export function defineComponent({ render, state, ...methods }) {
   class Component {
     #isMounted = false;
     #vdom = null;
     #hostEl = null;
+    #eventHandlers = null;
+    #parentComponent = null;
+    #dispatcher = new Dispatcher();
+    #subscriptions = [];
 
-    constructor(props = {}) {
+    constructor(props = {}, eventHandlers = {}, parentComponent = null) {
       this.props = props;
       this.state = state ? state(props) : {};
+      this.#eventHandlers = eventHandlers;
+      this.#parentComponent = parentComponent;
     }
 
     get elements() {
@@ -33,7 +41,13 @@ export function defineComponent({ render, state }) {
       }
 
       if (this.#vdom.type === DOM_TYPES.FRAGMENT) {
-        return extractChildren(this.#vdom).map((child) => child.el);
+        return extractChildren(this.#vdom).flatMap((child) => {
+          if (child.type === DOM_TYPES.COMPONENT) {
+            return child.component.elements;
+          }
+
+          return [child.el];
+        });
       }
 
       return [this.#vdom.el];
@@ -49,6 +63,27 @@ export function defineComponent({ render, state }) {
       }
 
       return 0;
+    }
+
+    #wireEventHandlers() {
+      this.#subscriptions = Object.entries(this.#eventHandlers).map(
+        ([eventName, handler]) => this.#wireEventHandler(eventName, handler)
+      );
+    }
+
+    #wireEventHandler(eventName, handler) {
+      return this.#dispatcher.subscribe(eventName, (payload) => {
+        if (this.#parentComponent) {
+          handler.call(this.#parentComponent, payload);
+        } else {
+          handler(payload);
+        }
+      });
+    }
+
+    updateProps(props) {
+      this.props = { ...this.props, ...props };
+      this.#patch();
     }
 
     updateState(state) {
@@ -67,7 +102,8 @@ export function defineComponent({ render, state }) {
       }
 
       this.#vdom = this.render();
-      mountDOM(this.#vdom, hostEl, index);
+      mountDOM(this.#vdom, hostEl, index, this);
+      this.#wireEventHandlers();
 
       this.#hostEl = hostEl;
       this.#isMounted = true;
@@ -79,9 +115,16 @@ export function defineComponent({ render, state }) {
       }
 
       destroyDOM(this.#vdom);
+
+      this.#subscriptions.forEach((unsubscribe) => unsubscribe());
       this.#vdom = null;
       this.#hostEl = null;
       this.#isMounted = false;
+      this.#subscriptions = [];
+    }
+
+    emit(eventName, payload) {
+      this.#dispatcher.dispatch(eventName, payload);
     }
 
     #patch() {
@@ -92,8 +135,14 @@ export function defineComponent({ render, state }) {
       const vdom = this.render();
       this.#vdom = patchDOM(this.#vdom, vdom, this.#hostEl, this);
     }
+  }
 
-    // Updates the state and triggers a render cycle
+  for (const methodName in methods) {
+    if (hasOwnProperty(Component, methodName)) {
+      new Error(`Method "${methodName}()" already exists in the component.`);
+    }
+
+    Component.prototype[methodName] = methods[methodName];
   }
 
   return Component;

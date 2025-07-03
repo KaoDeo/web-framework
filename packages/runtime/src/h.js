@@ -4,6 +4,7 @@ export const DOM_TYPES = {
   TEXT: 'text',
   ELEMENT: 'element',
   FRAGMENT: 'fragment', //type of virtual node used to group multiple nodes that need to be attached to the DOM together but don’t have a parent node in the DOM.
+  COMPONENT: 'component',
 };
 
 /**
@@ -11,11 +12,14 @@ export const DOM_TYPES = {
  * @returns hypertext element
  */
 export function h(tag, props = {}, children = []) {
+  const type =
+    typeof tag === 'string' ? DOM_TYPES.ELEMENT : DOM_TYPES.COMPONENT;
+
   return {
     tag,
     props,
+    type,
     children: mapTextNodes(withoutNulls(children)),
-    type: DOM_TYPES.ELEMENT,
   };
 }
 
