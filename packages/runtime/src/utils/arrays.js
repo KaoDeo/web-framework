@@ -1,14 +1,5 @@
-// The reconciliation algorithm compares two virtual DOM trees,
-// finds the sequence of operations that transforms one into the other, and
-// patches the real DOM by applying those operations to it.
+import { makeCountMap, mapsDiff } from './maps.js';
 
-/**
- * If the given value is an array, it returns it. Otherwise, it returns an array
- * containing the given value.
- *
- * @param {any|any[]} maybeArray something that might be an array
- * @returns {any[]} an array
- */
 export function toArray(maybeArray) {
   return Array.isArray(maybeArray) ? maybeArray : [maybeArray];
 }
@@ -23,48 +14,39 @@ export function withoutNulls(arr) {
   return arr.filter((item) => item != null);
 }
 
-/**
- * Given two arrays, it returns the items that have been added to the new array
- * and the items that have been removed from the old array.
- *
- *
- * @param {any[]} oldArray the old array
- * @param {any[]} newArray the new array
- * @returns {{added: any[], removed: any[]}}
- */
-// export function arraysDiff(oldArray, newArray) {
-//   const oldsCount = makeCountMap(oldArray);
-//   const newsCount = makeCountMap(newArray);
-//   const diff = mapsDiff(oldsCount, newsCount);
+export function arraysDiff(oldArray, newArray) {
+  const oldsCount = makeCountMap(oldArray);
+  const newsCount = makeCountMap(newArray);
+  const diff = mapsDiff(oldsCount, newsCount);
 
-//   // Added items repeated as many times as they appear in the new array
-//   const added = diff.added.flatMap((key) =>
-//     Array(newsCount.get(key)).fill(key)
-//   );
+  // Added items repeated as many times as they appear in the new array
+  const added = diff.added.flatMap((key) =>
+    Array(newsCount.get(key)).fill(key)
+  );
 
-//   // Removed items repeated as many times as they appeared in the old array
-//   const removed = diff.removed.flatMap((key) =>
-//     Array(oldsCount.get(key)).fill(key)
-//   );
+  // Removed items repeated as many times as they appeared in the old array
+  const removed = diff.removed.flatMap((key) =>
+    Array(oldsCount.get(key)).fill(key)
+  );
 
-//   // Updated items have to check the difference in counts
-//   for (const key of diff.updated) {
-//     const oldCount = oldsCount.get(key);
-//     const newCount = newsCount.get(key);
-//     const delta = newCount - oldCount;
+  // Updated items have to check the difference in counts
+  for (const key of diff.updated) {
+    const oldCount = oldsCount.get(key);
+    const newCount = newsCount.get(key);
+    const delta = newCount - oldCount;
 
-//     if (delta > 0) {
-//       added.push(...Array(delta).fill(key));
-//     } else {
-//       removed.push(...Array(-delta).fill(key));
-//     }
-//   }
+    if (delta > 0) {
+      added.push(...Array(delta).fill(key));
+    } else {
+      removed.push(...Array(-delta).fill(key));
+    }
+  }
 
-//   return {
-//     added,
-//     removed,
-//   };
-// }
+  return {
+    added,
+    removed,
+  };
+}
 
 export const ARRAY_DIFF_OP = {
   ADD: 'add',

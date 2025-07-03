@@ -6,10 +6,16 @@ import {
 } from './attributes.js';
 import { destroyDOM } from './destroy-dom.js';
 import { addEventListener } from './events.js';
-import { DOM_TYPES } from './h.js';
+import { DOM_TYPES, extractChildren } from './h.js';
 import { mountDOM } from './mount-dom.js';
 import { areNodesEqual } from './nodes-equal.js';
 import { objectsDiff } from './utils/objects.js';
+import {
+  arraysDiffSequence,
+  ARRAY_DIFF_OP,
+  arraysDiff,
+} from './utils/arrays.js';
+import { isNotBlankOrEmptyString } from './utils/strings.js';
 
 export function patchDOM(oldVdom, newVdom, parentEl, hostComponent = null) {
   // when nodes change, destroy it and its subtree
@@ -118,11 +124,11 @@ function patchClasses(el, oldClass, newClass) {
   }
 }
 
-// function toClassList(classes = '') {
-//   return Array.isArray(classes)
-//     ? classes.filter(isNotBlankOrEmptyString)
-//     : classes.split(/(\s+)/).filter(isNotBlankOrEmptyString);
-// }
+function toClassList(classes = '') {
+  return Array.isArray(classes)
+    ? classes.filter(isNotBlankOrEmptyString)
+    : classes.split(/(\s+)/).filter(isNotBlankOrEmptyString);
+}
 
 function patchStyles(el, oldStyle = {}, newStyle = {}) {
   const { added, removed, updated } = objectsDiff(oldStyle, newStyle);
@@ -164,66 +170,38 @@ function patchEvents(
   return addedListeners;
 }
 
-// function patchComponent(oldVdom, newVdom) {
-//   const { component } = oldVdom;
-//   const { children } = newVdom;
-//   const { props } = extractPropsAndEvents(newVdom);
+function patchChildren(oldVdom, newVdom) {
+  const oldChildren = extractChildren(oldVdom);
+  const newChildren = extractChildren(newVdom);
+  const parentEl = oldVdom.el;
 
-//   component.setExternalContent(children);
-//   component.updateProps(props);
+  const diffSeq = arraysDiffSequence(oldChildren, newChildren, areNodesEqual);
 
-//   newVdom.component = component;
-//   newVdom.el = component.firstElement;
-// }
+  for (const operation of diffSeq) {
+    const { originalIndex, index, item } = operation;
+    switch (operation.op) {
+      case ARRAY_DIFF_OP.ADD: {
+        mountDOM(item, parentEl, index);
+        break;
+      }
+      case ARRAY_DIFF_OP.REMOVE: {
+        destroyDOM(item);
+        break;
+      }
 
-// function patchChildren(oldVdom, newVdom, hostComponent) {
-//   const oldChildren = extractChildren(oldVdom);
-//   const newChildren = extractChildren(newVdom);
-//   const parentEl = oldVdom.el;
-
-//   const diffSeq = arraysDiffSequence(oldChildren, newChildren, areNodesEqual);
-
-//   for (const operation of diffSeq) {
-//     const { originalIndex, index, item } = operation;
-//     const offset = hostComponent?.offset ?? 0;
-
-//     switch (operation.op) {
-//       case ARRAY_DIFF_OP.ADD: {
-//         mountDOM(item, parentEl, index + offset, hostComponent);
-//         break;
-//       }
-
-//       case ARRAY_DIFF_OP.REMOVE: {
-//         destroyDOM(item);
-//         break;
-//       }
-
-//       case ARRAY_DIFF_OP.MOVE: {
-//         const oldChild = oldChildren[originalIndex];
-//         const newChild = newChildren[index];
-//         const elAtTargetIndex = parentEl.childNodes[index + offset];
-
-//         const elementsToMove = isComponent(oldChild)
-//           ? oldChild.component.elements
-//           : [oldChild.el];
-
-//         elementsToMove.forEach((el) => {
-//           parentEl.insertBefore(el, elAtTargetIndex);
-//           patchDOM(oldChild, newChild, parentEl, hostComponent);
-//         });
-
-//         break;
-//       }
-
-//       case ARRAY_DIFF_OP.NOOP: {
-//         patchDOM(
-//           oldChildren[originalIndex],
-//           newChildren[index],
-//           parentEl,
-//           hostComponent
-//         );
-//         break;
-//       }
-//     }
-//   }
-// }
+      case ARRAY_DIFF_OP.MOVE: {
+        const oldChild = oldChildren[originalIndex];
+        const newChild = newChildren[index];
+        const el = oldChild.el;
+        const elAtTargetIndex = parentEl.childNodes[index];
+        parentEl.insertBefore(el, elAtTargetIndex);
+        patchDOM(oldChild, newChild, parentEl);
+        break;
+      }
+      case ARRAY_DIFF_OP.NOOP: {
+        patchDOM(oldChildren[originalIndex], newChildren[index], parentEl);
+        break;
+      }
+    }
+  }
+}
