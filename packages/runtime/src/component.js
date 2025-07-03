@@ -14,6 +14,7 @@
 import { destroyDOM } from './destroy-dom.js';
 import { mountDOM } from './mount-dom.js';
 import { patchDOM } from './patch-dom.js';
+import { DOM_TYPES, extractChildren } from './h.js';
 
 export function defineComponent({ render, state }) {
   class Component {
@@ -24,6 +25,30 @@ export function defineComponent({ render, state }) {
     constructor(props = {}) {
       this.props = props;
       this.state = state ? state(props) : {};
+    }
+
+    get elements() {
+      if (this.#vdom == null) {
+        return [];
+      }
+
+      if (this.#vdom.type === DOM_TYPES.FRAGMENT) {
+        return extractChildren(this.#vdom).map((child) => child.el);
+      }
+
+      return [this.#vdom.el];
+    }
+
+    get firstElement() {
+      return this.elements[0];
+    }
+
+    get offset() {
+      if (this.#vdom.type === DOM_TYPES.FRAGMENT) {
+        return Array.from(this.#hostEl.children).indexOf(this.firstElement);
+      }
+
+      return 0;
     }
 
     updateState(state) {
@@ -65,7 +90,7 @@ export function defineComponent({ render, state }) {
       }
 
       const vdom = this.render();
-      this.#vdom = patchDOM(this.#vdom, vdom, this.#hostEl);
+      this.#vdom = patchDOM(this.#vdom, vdom, this.#hostEl, this);
     }
 
     // Updates the state and triggers a render cycle

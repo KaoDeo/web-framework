@@ -55,32 +55,6 @@ export const ARRAY_DIFF_OP = {
   NOOP: 'noop',
 };
 
-/**
- * @typedef ArraysDiffSequenceOp
- * @type {object}
- * @property {string} op the operation to perform
- * @property {number} from the index of the item in the old array
- * @property {number} index the index of the item in the new array
- * @property {(any|undefined)} [item] the item to add or remove
- */
-
-/**
- * Compare two arrays and return a sequence of operations to transform the old
- * array into the new one. The sequence is so that, if the operations are applied
- * in order, the old array is transformed into the new one.
- *
- * If an item moves around as a side effect to other operations taking place,
- * such as adding something before it, the move operation will be included in
- * the sequence as a NOOP operation. We call these, natural movements.
- *
- * The sequence produced by this function can be applied to an array using the
- * `applyArraysDiffSequence` function.
- *
- * @param {any[]} oldArray the old array
- * @param {any[]} newArray the new array
- * @param {(a: any, b: any) => boolean} equalsFn the function to use to compar two items
- * @returns {ArraysDiffSequenceOp[]} the sequence of operations
- */
 export function arraysDiffSequence(
   oldArray,
   newArray,
