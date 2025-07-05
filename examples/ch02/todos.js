@@ -263,43 +263,58 @@ import {
 
 //? stateful components
 
-const component = defineComponent({
+// const component = defineComponent({
+//   state() {
+//     return { count: 0 };
+//   },
+
+//   render() {
+//     return hFragment([
+//       h('h1', {}, ['Important news!']),
+//       h('p', {}, ['I made myself coffee.']),
+//       h('p', {}, [`Count: ${this.state.count}`]),
+
+//       h(
+//         'button',
+//         {
+//           on: {
+//             click: () => {
+//               this.updateState({ count: this.state.count + 1 });
+//             },
+//           },
+//         },
+//         ['Say congrats']
+//       ),
+//     ]);
+//   },
+// });
+
+const SearchField = defineComponent({
+  render() {
+    return h('input', {
+      on: {
+        input: (event) => this.emit('search', event.target.value),
+      },
+    });
+  },
+});
+
+const ParentComponent = defineComponent({
   state() {
     return { count: 0 };
   },
 
   render() {
     return hFragment([
-      h('h1', {}, ['Important news!']),
-      h('p', {}, ['I made myself coffee.']),
-      h('p', {}, [`Count: ${this.state.count}`]),
-
-      h(
-        'button',
-        {
-          on: {
-            click: () => {
-              this.updateState({ count: this.state.count + 1 });
-            },
-          },
+      h('p', {}, [`Clicked ${this.state.count} times`]),
+      h(SearchField, {
+        search: () => {
+          this.updateState({ count: this.state.count + 1 });
         },
-        ['Say congrats']
-      ),
+      }),
     ]);
   },
 });
 
-const MyFancyButton = defineComponent({
-  render() {
-    return h(
-      'button',
-      {
-        on: { click: () => this.emit('click') },
-      },
-      ['Click me!']
-    );
-  },
-});
-
-const coffee = new component();
-coffee.mount(document.body);
+const app = new ParentComponent();
+app.mount(document.body);

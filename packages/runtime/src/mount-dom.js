@@ -33,6 +33,7 @@ export function mountDOM(vdom, parentEl, index, hostComponent = null) {
 
 function createComponentNode(vdom, parentEl, index, hostComponent) {
   const { props, events } = extractPropsAndEvents(vdom);
+  const { tag: Component, children } = vdom;
 
   const component = new Component(props, events, hostComponent);
   component.mount(parentEl, index);
@@ -74,7 +75,6 @@ function insert(el, parentEl, index) {
   // If index is null or undefined, simply append.
   // Note the usage of == instead of ===.
 
-  console.log(parentEl);
   if (index == null) {
     parentEl.append(el);
     return;

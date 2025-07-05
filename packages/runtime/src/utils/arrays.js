@@ -11,6 +11,10 @@ export function toArray(maybeArray) {
  * @returns {any[]} the array without nulls and undefined values
  */
 export function withoutNulls(arr) {
+  if (!Array.isArray(arr)) {
+    console.warn('Expected array, but got:', arr);
+    return [];
+  }
   return arr.filter((item) => item != null);
 }
 
