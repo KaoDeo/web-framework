@@ -2,6 +2,7 @@ import { DOM_TYPES } from './h.js';
 import { addEventListeners } from './events.js';
 import { setAttributes } from './attributes.js';
 import { extractPropsAndEvents } from './utils/props.js';
+import { enqueueJob } from './scheduler.js';
 
 export function mountDOM(vdom, parentEl, index, hostComponent = null) {
   switch (vdom.type) {
@@ -22,6 +23,7 @@ export function mountDOM(vdom, parentEl, index, hostComponent = null) {
 
     case DOM_TYPES.COMPONENT: {
       createComponentNode(vdom, parentEl, index, hostComponent);
+      enqueueJob(() => vdom.component.onMounted());
       break;
     }
 

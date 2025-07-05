@@ -18,7 +18,13 @@ import { DOM_TYPES, extractChildren } from './h.js';
 import { hasOwnProperty } from './utils/objects.js';
 import { Dispatcher } from './dispatcher.js';
 
-export function defineComponent({ render, state, ...methods }) {
+export function defineComponent({
+  render,
+  state,
+  onMounted = () => {},
+  onUnmounted = () => {},
+  ...methods
+}) {
   class Component {
     #isMounted = false;
     #vdom = null;
@@ -121,6 +127,14 @@ export function defineComponent({ render, state, ...methods }) {
       this.#hostEl = null;
       this.#isMounted = false;
       this.#subscriptions = [];
+    }
+
+    onMounted() {
+      return Promise.resolve(onMounted.call(this));
+    }
+
+    onUnmounted() {
+      return Promise.resolve(onUnmounted.call(this));
     }
 
     emit(eventName, payload) {
