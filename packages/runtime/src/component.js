@@ -17,6 +17,7 @@ import { patchDOM } from './patch-dom.js';
 import { DOM_TYPES, extractChildren } from './h.js';
 import { hasOwnProperty } from './utils/objects.js';
 import { Dispatcher } from './dispatcher.js';
+import { fillSlots } from './slots.js';
 
 export function defineComponent({
   render,
@@ -33,12 +34,17 @@ export function defineComponent({
     #parentComponent = null;
     #dispatcher = new Dispatcher();
     #subscriptions = [];
+    #children = [];
 
     constructor(props = {}, eventHandlers = {}, parentComponent = null) {
       this.props = props;
       this.state = state ? state(props) : {};
       this.#eventHandlers = eventHandlers;
       this.#parentComponent = parentComponent;
+    }
+
+    setExternalContent(children) {
+      this.#children = children;
     }
 
     get elements() {
@@ -99,7 +105,10 @@ export function defineComponent({
 
     // Renders the component’s vdom based on the current props and state
     render() {
-      return render.call(this);
+      const vdom = render.call(this);
+      fillSlots(vdom, this.#children);
+
+      return vdom;
     }
 
     mount(hostEl, index = null) {

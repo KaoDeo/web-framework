@@ -23,6 +23,7 @@ export function mountDOM(vdom, parentEl, index, hostComponent = null) {
 
     case DOM_TYPES.COMPONENT: {
       createComponentNode(vdom, parentEl, index, hostComponent);
+      //“Wait until all mounting is done, then run this.”
       enqueueJob(() => vdom.component.onMounted());
       break;
     }
@@ -38,6 +39,8 @@ function createComponentNode(vdom, parentEl, index, hostComponent) {
   const { tag: Component, children } = vdom;
 
   const component = new Component(props, events, hostComponent);
+  component.setExternalContent(children);
+
   component.mount(parentEl, index);
   vdom.component = component;
   vdom.el = component.firstElement;

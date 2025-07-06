@@ -127,7 +127,9 @@ function patchClasses(el, oldClass, newClass) {
 
 function patchComponent(oldVdom, newVdom) {
   const { component } = oldVdom;
+  const { children } = newVdom;
   const { props } = extractPropsAndEvents(newVdom);
+  component.setExternalContent(children);
   component.updateProps(props);
   newVdom.component = component;
   newVdom.el = component.firstElement;

@@ -5,6 +5,7 @@ export const DOM_TYPES = {
   ELEMENT: 'element',
   FRAGMENT: 'fragment', //type of virtual node used to group multiple nodes that need to be attached to the DOM together but don’t have a parent node in the DOM.
   COMPONENT: 'component',
+  SLOT: 'slot',
 };
 
 /**
@@ -21,6 +22,10 @@ export function h(tag, props = {}, children = []) {
     type,
     children: mapTextNodes(withoutNulls(children)),
   };
+}
+
+export function hSlot(children = []) {
+  return { type: DOM_TYPES.SLOT, children };
 }
 
 function mapTextNodes(children) {
