@@ -8,3 +8,4 @@ Web framework from scratch!
 - State manager
 - Renderer
 - Component architecture
+- slots
