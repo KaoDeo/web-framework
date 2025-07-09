@@ -1,6 +1,6 @@
 import { makeRouteMatcher } from './route-matchers.js';
 
-// get routes[], listen to URL changes, match curr route with routes[], update view
+// get routes[], listen to URL changes, update url when matched, update view
 export class HashRouter {
   #matchers = [];
   #isInitialized = false;
@@ -72,6 +72,10 @@ export class HashRouter {
       return;
     }
 
+    if (matcher.isRedirect) {
+      return this.navigateTo(matcher.route.redirect);
+    }
+
     this.#matchedRoute = matcher.route;
     this.#params = matcher.extractParams(path);
     this.#query = matcher.extractQuery(path);
@@ -79,11 +83,11 @@ export class HashRouter {
   }
 
   back() {
-    // TODO: Implement the back logic
+    window.history.back();
   }
 
   forward() {
-    // TODO: Implement the forward logic
+    window.history.forward();
   }
 
   #matchCurrentRoute() {
