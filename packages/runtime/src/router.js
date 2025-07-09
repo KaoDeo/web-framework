@@ -168,3 +168,13 @@ export class HashRouter {
     };
   }
 }
+
+export class NoopRouter {
+  init() {}
+  destroy() {}
+  navigateTo() {}
+  back() {}
+  forward() {}
+  subscribe() {}
+  unsubscribe() {}
+}

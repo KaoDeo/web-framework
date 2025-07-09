@@ -2,44 +2,49 @@ import { destroyDOM } from './destroy-dom.js';
 import { Dispatcher } from './dispatcher.js';
 import { mountDOM } from './mount-dom.js';
 import { patchDOM } from './patch-dom.js';
+import { NoopRouter } from './router.js';
 
 // creates application instance
-export function createApp({ state, view, reducers = {} }) {
+export function createApp(RootComponent, props = {}, options = {}) {
   let parentEl = null;
+  let isMounted = false;
   let vdom = null;
 
-  const dispatcher = new Dispatcher();
-  const subscriptions = [dispatcher.afterEveryCommand(renderApp)];
+  // The application context is injected into every component mounted in the app.
+  // This gives components access to objects that are global to the application.
+  const context = {
+    router: options.router || new NoopRouter(),
+  };
 
-  for (const actionName in reducers) {
-    const reducer = reducers[actionName];
-
-    const subs = dispatcher.subscribe(actionName, (payload) => {
-      state = reducer(state, payload);
-    });
-    subscriptions.push(subs);
-  }
-
-  function emit(eventName, payload) {
-    dispatcher.dispatch(eventName, payload);
-  }
-
-  function renderApp() {
-    const newVdom = view(state, emit);
-
-    vdom = patchDOM(vdom, newVdom, parentEl);
+  function reset() {
+    parentEl = null;
+    isMounted = false;
+    vdom = null;
   }
 
   return {
     mount(_parentEl) {
+      if (isMounted) {
+        throw new Error('The application is already mounted');
+      }
+
       parentEl = _parentEl;
-      vdom = view(state, emit);
-      mountDOM(vdom, parentEl);
+      vdom = h(RootComponent, props);
+      mountDOM(vdom, parentEl, null, { appContext: context });
+
+      context.router.init();
+
+      isMounted = true;
     },
+
     unmount() {
+      if (!isMounted) {
+        throw new Error('The application is not mounted');
+      }
+
       destroyDOM(vdom);
-      vdom = null;
-      subscriptions.forEach((unsubscribe) => unsubscribe());
+      context.router.destroy();
+      reset();
     },
   };
 }

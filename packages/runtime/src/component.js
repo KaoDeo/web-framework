@@ -35,6 +35,7 @@ export function defineComponent({
     #dispatcher = new Dispatcher();
     #subscriptions = [];
     #children = [];
+    #appContext = null;
 
     constructor(props = {}, eventHandlers = {}, parentComponent = null) {
       this.props = props;
@@ -75,6 +76,14 @@ export function defineComponent({
       }
 
       return 0;
+    }
+
+    setAppContext(appContext) {
+      this.#appContext = appContext;
+    }
+
+    get appContext() {
+      return this.#appContext;
     }
 
     #wireEventHandlers() {
